@@ -53,6 +53,32 @@ const PLACES_V1_FIELD_MASK = [
   "places.currentOpeningHours",
 ].join(",");
 
+const toRad = (deg) => (deg * Math.PI) / 180;
+const distanceKm = (a, b) => {
+  if (!isValidLocation(a) || !isValidLocation(b))
+    return Number.POSITIVE_INFINITY;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLng = Math.sin(dLng / 2);
+  const aTerm =
+    sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
+  const c = 2 * Math.atan2(Math.sqrt(aTerm), Math.sqrt(1 - aTerm));
+  return R * c;
+};
+
+const sortByDistanceIfPossible = (items, center) => {
+  if (!isValidLocation(center)) return items;
+  const copy = [...items];
+  copy.sort(
+    (x, y) => distanceKm(center, x.location) - distanceKm(center, y.location)
+  );
+  return copy;
+};
+
 class PlacesService {
   constructor() {
     this.apiKey = Config.GOOGLE_PLACES_API_KEY;
@@ -191,8 +217,9 @@ class PlacesService {
         })
       );
       const merged = dedupeById(parts.flat());
+      const ordered = sortByDistanceIfPossible(merged, location);
       const cursors = Object.fromEntries(types.map((t) => [t, null]));
-      return { results: merged, cursors, hasMore: false };
+      return { results: ordered, cursors, hasMore: false };
     }
 
     const allKeywords = Object.values(VENUE_TYPES)
@@ -200,7 +227,8 @@ class PlacesService {
       .filter(Boolean)
       .join(" OR ");
     const results = await this.searchTextV1(allKeywords || "sports", location);
-    return { results: results || [], cursors: null, hasMore: false };
+    const ordered = sortByDistanceIfPossible(results || [], location);
+    return { results: ordered, cursors: null, hasMore: false };
   }
 
   async searchTextV1(textQuery, center) {

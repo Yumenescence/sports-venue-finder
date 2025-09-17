@@ -36,7 +36,9 @@ export default function useVenues({ query, center, types, enabled = true }) {
     queryFn: async ({ pageParam }) => {
       const offset = (pageParam && pageParam.offset) || 0;
 
-      let fullResults = resultsCache.get(cacheKey);
+      let cached = resultsCache.get(cacheKey);
+      let fullResults = cached?.results || null;
+      let computedCenter = cached?.center || null;
       if (!fullResults) {
         if (Array.isArray(types) && types.length > 0) {
           const res = await PlacesService.searchNearbyPlaces(
@@ -45,6 +47,7 @@ export default function useVenues({ query, center, types, enabled = true }) {
             null
           );
           fullResults = res?.results || [];
+          computedCenter = center || null;
         } else if (query && typeof query === "string" && query.trim()) {
           const res = await PlacesService.searchPlaces(
             query.trim(),
@@ -52,13 +55,19 @@ export default function useVenues({ query, center, types, enabled = true }) {
             []
           );
           fullResults = res?.results || [];
+          computedCenter = res?.center || center || null;
         } else if (center) {
           const res = await PlacesService.searchNearbyPlaces(center, [], null);
           fullResults = res?.results || [];
+          computedCenter = center;
         } else {
           fullResults = [];
+          computedCenter = null;
         }
-        resultsCache.set(cacheKey, fullResults);
+        resultsCache.set(cacheKey, {
+          results: fullResults,
+          center: computedCenter,
+        });
       }
 
       const pageItems = fullResults.slice(offset, offset + PAGE_SIZE);
@@ -68,6 +77,7 @@ export default function useVenues({ query, center, types, enabled = true }) {
         hasMore,
         nextOffset: hasMore ? offset + PAGE_SIZE : null,
         cursors: null,
+        center: computedCenter || null,
       };
     },
   });

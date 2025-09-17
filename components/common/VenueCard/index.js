@@ -13,7 +13,7 @@ import { getVenueConfigByGoogleTypes } from "../../../constants/venueTypes";
 import LocationService from "../../../services/LocationService";
 import { styles } from "./styles";
 
-const VenueCard = ({ venue, currentLocation, onPress }) => {
+const VenueCard = ({ venue, currentLocation, centerIsGps = true, onPress }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
@@ -137,7 +137,7 @@ const VenueCard = ({ venue, currentLocation, onPress }) => {
             <View style={styles.distanceContainer}>
               <Ionicons name="location-outline" size={14} color="#6c757d" />
               <Text style={styles.distance} testID="venue-card-distance">
-                {formatDistance(distance)}
+                {formatDistance(distance)}{centerIsGps ? "" : " from Center"}
               </Text>
             </View>
           )}
@@ -206,5 +206,6 @@ export default memo(VenueCard, (prev, next) => {
       (prev.currentLocation.lat !== next.currentLocation.lat ||
         prev.currentLocation.lng !== next.currentLocation.lng));
   if (distChanged) return false;
+  if (prev.centerIsGps !== next.centerIsGps) return false;
   return true;
 });

@@ -49,6 +49,21 @@ const HomeScreen = () => {
       !!committedQuery || !!isLocationActive || effectiveTypes.length > 0,
   });
 
+  const searchCenter = useMemo(() => {
+    if (isLocationActive && userLocation) return userLocation;
+    const pages = venuesQuery.data?.pages || [];
+    for (const p of pages) {
+      if (
+        p?.center &&
+        typeof p.center.lat === "number" &&
+        typeof p.center.lng === "number"
+      ) {
+        return p.center;
+      }
+    }
+    return null;
+  }, [isLocationActive, userLocation, venuesQuery.data]);
+
   useEffect(() => {
     const pages = venuesQuery.data?.pages || [];
     const merged = pages.flatMap((p) => p.results || []);
@@ -193,7 +208,8 @@ const HomeScreen = () => {
           {!loading && filtered.length > 0 && (
             <VenuesList
               venues={filtered}
-              currentLocation={userLocation}
+              currentLocation={searchCenter}
+              centerIsGps={!!isLocationActive}
               onLoadMore={loadMoreResults}
               hasMoreResults={!!venuesQuery.hasNextPage}
               loadingMore={!!venuesQuery.isFetchingNextPage}

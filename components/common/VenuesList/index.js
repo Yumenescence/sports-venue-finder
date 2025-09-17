@@ -24,6 +24,7 @@ const VenuesList = ({
   onLoadMore = null,
   hasMoreResults = false,
   loadingMore = false,
+  centerIsGps = true,
 }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [currentSort, setCurrentSort] = useState(sortBy);
@@ -64,7 +65,7 @@ const VenuesList = ({
         return venuesCopy.sort((a, b) => {
           const ratingA = a.rating || 0;
           const ratingB = b.rating || 0;
-          return ratingB - ratingA; // by rating descending
+          return ratingB - ratingA; 
         });
 
       case "name":
@@ -137,10 +138,11 @@ const VenuesList = ({
       <VenueCard
         venue={item}
         currentLocation={currentLocation}
+        centerIsGps={centerIsGps}
         onPress={handleVenuePress}
       />
     ),
-    [currentLocation, handleVenuePress]
+    [currentLocation, centerIsGps, handleVenuePress]
   );
 
   const keyExtractor = useCallback((item) => item.id, []);
