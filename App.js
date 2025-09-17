@@ -2,9 +2,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Platform, Text, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./App.styles";
 import SnackbarProvider from "./components/common/SnackbarProvider";
 import HomeScreen from "./components/screens/HomeScreen";
+import Config from "./config";
 
 const queryClient = new QueryClient();
 
@@ -24,8 +26,14 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SnackbarProvider>
-        <StatusBar style="dark" backgroundColor="#fff" />
-        <HomeScreen />
+        <SafeAreaProvider>
+          <SafeAreaView
+            style={{ flex: 1, backgroundColor: Config.COLORS.PRIMARY }}
+          >
+            <StatusBar style="light" backgroundColor={Config.COLORS.PRIMARY} />
+            <HomeScreen />
+          </SafeAreaView>
+        </SafeAreaProvider>
       </SnackbarProvider>
     </QueryClientProvider>
   );

@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 32,
     backgroundColor: Config.COLORS.PRIMARY,
     borderBottomLeftRadius: 24,
